@@ -1,0 +1,36 @@
+name: Update AI News JSON
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 1,13 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  update-json:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 拉取仓库代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 运行抓取脚本
+        run: python scripts/fetch_updates.py
+
+      - name: 提交更新后的 JSON
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/updates.json
+          git diff --staged --quiet || git commit -m "chore: update AI news JSON"
+          git push
